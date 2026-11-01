@@ -47,6 +47,7 @@ const zh = {
   step2: "打开你的私有地址",
   remotePending: "完成服务器设置后，即可获取 HTTPS 地址。",
   copy: "复制对话地址",
+  remoteRequirement: "使用此地址的每台设备都需要安装并连接 Tailscale。",
   step3: "让它成为日常",
   step3Description:
     "iPhone / iPad：Safari → 分享 → 添加到主屏幕。Android：浏览器菜单 → 添加到主屏幕。电脑：将此页面加入书签。",
@@ -110,6 +111,8 @@ const zh = {
   authError: "密钥无效，请检查服务器上的 admin-token 文件。",
 };
 const en = {
+  remoteRequirement:
+    "Install and connect Tailscale on every device that uses this address.",
   fastChat: "Open fast chat",
   fastEveryday: "Fast · Everyday",
   fastVision: "Fast · Images",
@@ -234,7 +237,10 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener(
 );
 function linkFor(service) {
   const remote = location.hostname.endsWith(".ts.net");
-  if (service === "open_webui" && data?.tailscale.chat_url)
+  const local =
+    ["localhost", "127.0.0.1", "[::1]"].includes(location.hostname) &&
+    location.protocol === "http:";
+  if (service === "open_webui" && data?.tailscale.chat_url && !local)
     return data.tailscale.chat_url;
   if (remote || location.protocol === "https:") return null;
   const port = data?.services[service]?.port;
