@@ -27,4 +27,4 @@ whisper/sample.*
 CONSUMER_GUIDE.md
 launchd/
 scripts/setup_mac_server.sh
-workflows/
+/workflows/

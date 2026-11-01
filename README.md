@@ -19,9 +19,11 @@ Home AI is a companion to **Open WebUI**, not a replacement chat engine. Account
 
 ## Quick start: existing AI server
 
-Install Python **3.11 or 3.12** and download this repository. In the project directory:
+Install Python **3.11 or 3.12**, then clone this repository (or download its ZIP from GitHub):
 
 ```bash
+git clone https://github.com/lincolngao47-arch/home-ai.git
+cd home-ai
 bash scripts/install.sh
 bash scripts/start_dashboard.sh
 ```
