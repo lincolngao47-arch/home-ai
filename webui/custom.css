@@ -1,0 +1,90 @@
+/* Home AI chat polish. Keep Open WebUI's responsive layout and branding. */
+:root {
+  --homeai-chat-accent: #245443;
+  --homeai-chat-focus: #56866c;
+}
+
+/* Retire the legacy overlay, including in a tab with an older cached loader. */
+#homeai-floating-bar,
+#homeai-modal-backdrop {
+  display: none !important;
+}
+
+html.light body,
+html.light #chat-container {
+  background: #fafbf9;
+}
+html.dark body,
+html.dark #chat-container {
+  background: #171d1b;
+}
+
+#message-input-container {
+  padding: 6px 8px 8px;
+  border: 1px solid #dce4de;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 3px 16px rgb(24 48 36 / 5%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+html.dark #message-input-container {
+  border-color: #3a4841;
+  background: #202a25;
+  box-shadow: none;
+}
+#message-input-container:focus-within {
+  border-color: var(--homeai-chat-focus);
+}
+#chat-input-container {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+#chat-input {
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+#send-message-button {
+  background: var(--homeai-chat-accent);
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  /* At least 16px prevents iOS from zooming the page when input receives focus. */
+  #chat-input,
+  #chat-input[contenteditable="true"],
+  textarea,
+  input[type="text"],
+  input[type="email"],
+  input[type="password"] {
+    font-size: 16px;
+  }
+  #message-input-container {
+    border-radius: 20px;
+  }
+  #input-menu-button,
+  #integration-menu-button,
+  #voice-input-button,
+  #send-message-button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+#model-selector-model-button {
+  min-width: 0;
+  min-height: 44px;
+  max-width: min(42vw, 180px);
+}
+@media (prefers-reduced-motion: reduce) {
+  #message-input-container {
+    transition: none;
+  }
+}
+@media (max-width: 768px) {
+  #message-input-container button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}

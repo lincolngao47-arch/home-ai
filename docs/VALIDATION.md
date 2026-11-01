@@ -4,7 +4,7 @@ Checked on 2026-11-01 on macOS / Apple Silicon:
 
 - Installed dashboard dependencies into a new Python 3.11 virtual environment using `scripts/install.sh`.
 - Ten backend tests passed in both the existing environment and the new isolated environment: authentication, invalid actions, disabled controls, command failures, key persistence / permissions, removed account routes, static assets / headers, Tailscale route detection, and failed health checks.
-- JavaScript syntax and shell-script syntax checks passed. Three additional launcher tests verify raising a low inherited file limit, respecting a lower hard limit, and preserving an already-higher limit (13 tests total).
+- JavaScript syntax and shell-script syntax checks passed. Three additional launcher tests verify raising a low inherited file limit, respecting a lower hard limit, and preserving an already-higher limit alongside two UI-installer tests (15 tests total).
 - Live integration reported Open WebUI, Ollama, n8n, and Whisper online, and retrieved the installed model list from Ollama.
 - Browser checks covered English / Chinese, light / dark themes, invalid maintenance-key feedback, and responsive layouts. A narrow-screen metrics overflow was found and corrected.
 
@@ -20,3 +20,12 @@ Known limits:
 - No full WCAG conformance audit has been performed. The hub provides zoom support, keyboard focus states, labeled inputs, native dialogs, reduced-motion behavior, and text status indicators.
 
 This is an early preview, not a claim of production readiness across all platforms.
+
+
+## Mobile chat regression and correction
+
+A subsequent physical iPhone screenshot exposed two gaps that page-load checks did not catch: the legacy floating guide toolbar overlapped the composer, and the original 4K fast-model budget rejected a full chat request. The deployment now uses 16K context / 2K reply limits, concise system instructions, short model names, and a restrained stylesheet without floating controls. The installer updates WebUI’s startup-copy sources as well as served files and versions asset URLs.
+
+The real browser chat interface was tested against an isolated local WebUI data directory using the same model settings. It successfully answered both “hi” and “Hello” at phone-sized viewports, including a 390×470 viewport representing reduced space while typing. Checks found 16px editor text, no legacy floating bar, and no horizontal overflow. This does not emulate the actual iOS keyboard or Safari engine; the physical iPhone retest remains user validation.
+
+The production streaming endpoint also answered a greeting and accepted a synthetic request longer than the old context budget. Two installer regression tests check that the new assets survive WebUI’s startup copy, backups remain intact on reapplication, and unknown package layouts are left unchanged.

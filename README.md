@@ -71,9 +71,21 @@ With Ollama running, download two small models (about 6 GB):
 .venv/bin/python scripts/install_fast_models.py
 ```
 
-The hub’s main button then opens `home-fast`, a Qwen 4B instruct model for quick text chat. Choose `home-vision` for images. Both use a 4K context, and the larger models stay available. The hub’s model links override a browser’s old model selection.
+The hub’s main button then opens `home-fast`, a Qwen 4B instruct model for quick text chat. Choose `home-vision` for images. Both use a 16K context with up to 2K reply tokens, and the larger models stay available. The hub’s model links override a browser’s old model selection.
 
 On the development Mac, a greeting began showing text in about 2.1 seconds cold and 0.12 seconds warm through Open WebUI, versus about 14 seconds cold for the previous 27B default. These are individual local measurements; phone/network latency and task complexity vary. See [settings, tradeoffs, and reproduction](docs/PERFORMANCE.md).
+
+## Optional chat UI polish
+
+To apply the restrained chat stylesheet and remove the legacy floating guide controls, use the environment that contains Open WebUI:
+
+```bash
+.webui-venv/bin/python scripts/install_webui_polish.py
+```
+
+The helper backs up the affected assets, updates both the served and startup-copy source files, and versions their URLs so a reloaded phone page receives the changes. It preserves Open WebUI’s layout and branding. Reapply it after an Open WebUI package upgrade. Existing installations should use their own Open WebUI Python interpreter.
+
+Keep instance system instructions concise; a full installation guide should not be sent with every greeting. If an older model profile explicitly specifies a 4K context, update it to 16,384 and set its reply budget to 2,048 in Open WebUI, or remove that override so the alias defaults apply.
 
 ## Access from another device
 

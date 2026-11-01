@@ -17,7 +17,7 @@ This creates two aliases that reuse the downloaded weights:
 | `home-fast:latest` | `qwen3:4b-instruct` | Fast bilingual text chat |
 | `home-vision:latest` | `gemma3:4b` | Small text and image model |
 
-Both aliases use a 4,096-token context. The hub puts them first and opens them through Open WebUI’s `model` URL parameter, overriding a browser’s previously selected model. Base-model duplicates are hidden in the hub when their aliases exist; all installed models remain available to Ollama.
+Both aliases now use a 16,384-token context with a 2,048-token reply cap. The previous 4K setting could reject normal browser chats once system instructions and tool definitions were included. The hub puts them first and opens them through Open WebUI’s `model` URL parameter, overriding a browser’s previously selected model. Base-model duplicates are hidden in the hub when their aliases exist; all installed models remain available to Ollama.
 
 In Open WebUI, set the instance’s selected/default model to `home-fast:latest`. For a longer warm period, set its `keep_alive` model parameter to `30m`. Use it as the task model for titles and other background tasks, and disable typing autocomplete if it competes with chat requests. These are instance settings: the public download script does not authenticate to or change an existing Open WebUI installation.
 
@@ -25,7 +25,7 @@ The development instance uses those settings, has streaming enabled for both fas
 
 ## Measured on the development Mac
 
-One greeting request per condition, Apple M4 Pro / 64 GB, 4K context, maximum 128 output tokens, local HTTP. These are observations, not guaranteed latency or a quality benchmark.
+Historical measurements before the context-budget fix: one greeting request per condition, Apple M4 Pro / 64 GB, 4K context, maximum 128 output tokens, local HTTP. These short API measurements did not cover the phone browser’s full chat payload. These are observations, not guaranteed latency or a quality benchmark.
 
 | Request | First visible text | Model loading |
 | --- | --- | --- |
@@ -47,6 +47,6 @@ Reproduce a local greeting measurement without saving a conversation:
 
 The first command may use already-loaded weights, then unloads the model. The second therefore measures cold loading, and the third measures warm reuse. The script reports both first visible text and first reasoning text, avoiding confusion between internal reasoning and a user-visible answer.
 
-A 4K context is a deliberate speed/memory tradeoff. For long documents, long conversations, or difficult reasoning, choose an appropriate larger model. Short outputs do not establish factual accuracy or task quality.
+The current 16K budget leaves room for ordinary chat overhead; avoid attaching a lengthy installation guide as a default system prompt. After this fix, a warm production WebUI greeting began replying in about 0.10 seconds locally, a synthetic request longer than the old 4K budget completed successfully, and greetings completed through the full browser UI in an isolated preview with matching settings. For long documents, long conversations, or difficult reasoning, choose an appropriate larger model. Short outputs do not establish factual accuracy or task quality.
 
 Sources: [Qwen model](https://ollama.com/library/qwen3:4b-instruct), [Gemma model](https://ollama.com/library/gemma3:4b), [Open WebUI model URL parameters](https://docs.openwebui.com/features/chat-conversations/chat-features/url-params/).

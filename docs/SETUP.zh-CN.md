@@ -32,7 +32,9 @@ bash scripts/start_dashboard.sh
 
 在 Ollama 运行时执行 `.venv/bin/python scripts/install_fast_models.py`，明确下载约 6 GB 模型。入口会优先显示日常快聊 `home-fast` 和轻量看图 `home-vision`，主按钮直接选择快聊模型，避免手机记住旧的大模型。
 
-两者使用 4K 上下文，适合短对话；长文档和复杂任务可以选择原有大模型。开发机上一次简单问候的首字延迟约为冷启动 2.1 秒、经过 Open WebUI 热启动 0.12 秒，原来的 27B 模型约 14 秒。手机网络和任务复杂度会影响实际速度。默认模型、保温时间和后台任务模型的设置见 PERFORMANCE.md。
+两者使用 16K 上下文和最多 2K 回复预算；长文档和复杂任务可以选择原有大模型。开发机上一次简单问候的首字延迟约为冷启动 2.1 秒、经过 Open WebUI 热启动 0.12 秒，原来的 27B 模型约 14 秒。手机网络和任务复杂度会影响实际速度。默认模型、保温时间和后台任务模型的设置见 PERFORMANCE.md。
+
+聊天页面的可选简洁样式：使用安装 Open WebUI 的 Python 环境运行 `scripts/install_webui_polish.py`。它会备份原文件，移除旧的悬浮指南栏，并为手机设置易读输入字号与触控尺寸。升级 Open WebUI 后需要重新应用。旧模型配置中的 4K 上下文也需更新为 16384，回复预算设为 2048。
 
 ## 外出访问：Tailscale（方案 A）
 

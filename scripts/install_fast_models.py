@@ -23,7 +23,7 @@ def main():
                     progress=int(data.get('completed',0)*100/total)//10*10
                     if progress!=last: print(f'  {progress}%',flush=True);last=progress
                 elif data.get('status')=='success':print('  downloaded',flush=True)
-        with request('/api/create',{'model':alias,'from':base,'parameters':{'num_ctx':4096,'temperature':0.6},'stream':False}) as response:
+        with request('/api/create',{'model':alias,'from':base,'parameters':{'num_ctx':16384,'num_predict':2048,'temperature':0.6},'stream':False}) as response:
             data=json.load(response)
             if data.get('error'):raise RuntimeError(data['error'])
         print(f'Ready: {alias} — {description}',flush=True)
