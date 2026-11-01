@@ -4,7 +4,7 @@ A small, bilingual home page for your private AI server. Open chat, see which se
 
 **Status: early preview.** Built and exercised on an Apple Silicon Mac with an existing Ollama + Open WebUI installation. The dashboard also runs on Linux; native service controls are macOS-only. Phones, tablets, Windows PCs, and Macs use the same responsive web interface.
 
-[中文安装指南](docs/SETUP.zh-CN.md) · [Architecture](docs/ARCHITECTURE.md) · [Security](docs/SECURITY.md) · [Alternatives](docs/ALTERNATIVES.md) · [Validation](docs/VALIDATION.md)
+[中文安装指南](docs/SETUP.zh-CN.md) · [Architecture](docs/ARCHITECTURE.md) · [Security](docs/SECURITY.md) · [Alternatives](docs/ALTERNATIVES.md) · [Validation](docs/VALIDATION.md) · [Fast models and measurements](docs/PERFORMANCE.md)
 
 ## What you get
 
@@ -48,6 +48,18 @@ The installer creates an isolated dashboard environment. It does not alter exist
 5. Add private remote access below.
 
 These scripts support macOS and Linux. Windows users can use WSL2 for the server, or connect by browser to a server on another machine. A clean-machine installation and Windows / Linux end-to-end operation still need community testing. Optional n8n / Whisper are not installed by this starter.
+
+## Make everyday chat faster
+
+With Ollama running, download two small models (about 6 GB):
+
+```bash
+.venv/bin/python scripts/install_fast_models.py
+```
+
+The hub’s main button then opens `home-fast`, a Qwen 4B instruct model for quick text chat. Choose `home-vision` for images. Both use a 4K context, and the larger models stay available. The hub’s model links override a browser’s old model selection.
+
+On the development Mac, a greeting began showing text in about 2.1 seconds cold and 0.12 seconds warm through Open WebUI, versus about 14 seconds cold for the previous 27B default. These are individual local measurements; phone/network latency and task complexity vary. See [settings, tradeoffs, and reproduction](docs/PERFORMANCE.md).
 
 ## Access from another device
 

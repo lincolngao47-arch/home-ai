@@ -7,7 +7,15 @@ PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 PYTHON_BIN="${HOME_AI_PYTHON:-$PROJECT_DIR/.venv/bin/python}"
 [[ -x "$PYTHON_BIN" ]] || PYTHON_BIN=/opt/anaconda3/envs/webui/bin/python
 [[ -x "$PYTHON_BIN" ]] || PYTHON_BIN=python3
-STATE=$(tailscale status --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin).get("BackendState","Unknown"))')
+if ! STATE=$(tailscale status --json | "$PYTHON_BIN" -c '
+import json,sys
+try:
+    print(json.load(sys.stdin).get("BackendState","Unknown"))
+except (ValueError, TypeError):
+    sys.exit("Tailscale could not report its state. Open its app and check the VPN connection. If it is stuck after an update, restart the Mac when convenient.")
+'); then
+    exit 1
+fi
 [[ "$STATE" = Running ]] || { echo "Tailscale state: $STATE. Open Tailscale and sign in, then run this script again."; exit 1; }
 # Do not overwrite unrelated existing Serve routes.
 tailscale serve status --json | "$PYTHON_BIN" -c '

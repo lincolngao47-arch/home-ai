@@ -24,6 +24,12 @@ bash scripts/start_dashboard.sh
 
 新用户默认等待审批。现有安装的持久化设置以 Open WebUI 管理面板为准。本项目不会自动下载模型，也不会安装 n8n 或 Whisper。首次完整安装和 Linux / WSL2 端到端使用仍需更多测试。
 
+## 更快的日常对话
+
+在 Ollama 运行时执行 `.venv/bin/python scripts/install_fast_models.py`，明确下载约 6 GB 模型。入口会优先显示日常快聊 `home-fast` 和轻量看图 `home-vision`，主按钮直接选择快聊模型，避免手机记住旧的大模型。
+
+两者使用 4K 上下文，适合短对话；长文档和复杂任务可以选择原有大模型。开发机上一次简单问候的首字延迟约为冷启动 2.1 秒、经过 Open WebUI 热启动 0.12 秒，原来的 27B 模型约 14 秒。手机网络和任务复杂度会影响实际速度。默认模型、保温时间和后台任务模型的设置见 PERFORMANCE.md。
+
 ## 外出访问：Tailscale（方案 A）
 
 在服务器和手机 / 平板 / 电脑上安装 Tailscale，登录同一私有网络，然后运行：

@@ -10,8 +10,9 @@ Checked on 2026-11-01 on macOS / Apple Silicon:
 
 Known limits:
 
-- Tailscale sign-in succeeded on the development host, but Serve setup hit a control-plane timeout. Its network diagnostic found no responding relay. Private HTTPS and an off-LAN phone connection are **not yet verified** there.
+- Tailscale sign-in succeeded on the development host, but Serve setup hit a control-plane timeout. Its initial network diagnostic found no responding relay; after a Tailscale update, macOS left the network extension stuck starting with an old extension waiting for removal on reboot. Private HTTPS and an off-LAN phone connection are **not yet verified** there.
 - A complete new Open WebUI / model installation was not exercised; existing chat and model services were retained.
+- Small Qwen and Gemma models were downloaded and exposed through tuned aliases. The Qwen profile was exercised through Open WebUI’s streaming endpoint; greeting timings are recorded in PERFORMANCE.md. The Gemma profile correctly identified a synthetic red PNG through the same endpoint (about 2.1 seconds to first visible text for that one image test).
 - No destructive stop/restart actions were run against active AI services during verification. Action validation and failure behavior were tested with isolated test doubles.
 - Linux / Windows / WSL2 server operation and physical iOS / Android devices require further testing. Responsive browser emulation is not a substitute for those tests.
 - No full WCAG conformance audit has been performed. The hub provides zoom support, keyboard focus states, labeled inputs, native dialogs, reduced-motion behavior, and text status indicators.

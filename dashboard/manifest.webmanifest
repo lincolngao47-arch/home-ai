@@ -1,1 +1,16 @@
-{"name":"Home AI","short_name":"Home AI","start_url":"/","display":"standalone","background_color":"#f5f6f2","theme_color":"#142b28","icons":[{"src":"/assets/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}]}
+{
+  "name": "Home AI",
+  "short_name": "Home AI",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f6f2",
+  "theme_color": "#142b28",
+  "icons": [
+    {
+      "src": "/assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
