@@ -24,6 +24,10 @@ bash scripts/start_dashboard.sh
 
 新用户默认等待审批。现有安装的持久化设置以 Open WebUI 管理面板为准。本项目不会自动下载模型，也不会安装 n8n 或 Whisper。首次完整安装和 Linux / WSL2 端到端使用仍需更多测试。
 
+## 登录后自动启动（macOS）
+
+先成功运行一次入口和对话服务，再执行 `.venv/bin/python scripts/install_autostart.py --chat`。系统会在登录后启动服务，并在进程退出时自动重启。现有 Open WebUI 可用 `HOME_AI_WEBUI_BIN` 指向其启动程序。模型缓存完整后可加 `--offline`，减少启动时的网络依赖。日志和旧配置保存在 `.home-ai/`。
+
 ## 更快的日常对话
 
 在 Ollama 运行时执行 `.venv/bin/python scripts/install_fast_models.py`，明确下载约 6 GB 模型。入口会优先显示日常快聊 `home-fast` 和轻量看图 `home-vision`，主按钮直接选择快聊模型，避免手机记住旧的大模型。

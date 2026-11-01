@@ -16,6 +16,7 @@ jobs:
           node-version: '22'
       - run: pip install -r dashboard/requirements.txt
       - run: python -m unittest discover -s tests -v
+      - run: python -m compileall -q dashboard scripts
       - run: node --check dashboard/app.js
       - run: for file in scripts/*.sh; do bash -n "$file"; done
       - run: python scripts/export_source.py

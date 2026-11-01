@@ -10,6 +10,32 @@ case "$ACTION" in start|stop|restart) ;; *) echo 'Unknown action'; exit 2;; esac
 mkdir -p "$PROJECT_DIR/.home-ai"
 exec >> "$PROJECT_DIR/.home-ai/service-control.log" 2>&1
 printf '\n%s %s %s\n' "$(date -u)" "$SERVICE" "$ACTION"
+MANAGED_LABEL=''
+case "$SERVICE" in
+  open_webui) MANAGED_LABEL=com.homeai.open-webui; MANAGED_URL=http://127.0.0.1:3000/health;;
+  whisper) MANAGED_LABEL=com.homeai.whisper; MANAGED_URL=http://127.0.0.1:8000/health;;
+esac
+MANAGED_AGENT="$HOME/Library/LaunchAgents/$MANAGED_LABEL.plist"
+MANAGED_JOB="gui/$(id -u)/$MANAGED_LABEL"
+if [[ -n "$MANAGED_LABEL" && -f "$MANAGED_AGENT" ]]; then
+  if [[ "$ACTION" = stop ]]; then
+    if launchctl print "$MANAGED_JOB" > /dev/null 2>&1; then launchctl bootout "$MANAGED_JOB"; fi
+    exit 0
+  fi
+  if launchctl print "$MANAGED_JOB" > /dev/null 2>&1; then
+    if [[ "$ACTION" = restart ]]; then launchctl kickstart -k "$MANAGED_JOB"; fi
+  else
+    if ! launchctl bootstrap "gui/$(id -u)" "$MANAGED_AGENT"; then
+      # Login may have registered the job while this script was checking it.
+      launchctl print "$MANAGED_JOB" > /dev/null
+    fi
+  fi
+  for attempt in {1..20}; do
+    if curl --noproxy '*' -fsS --max-time 2 "$MANAGED_URL" > /dev/null; then exit 0; fi
+    sleep 2
+  done
+  echo "Supervised $SERVICE did not become healthy within the startup window."; exit 1
+fi
 if [[ "$ACTION" = stop || "$ACTION" = restart ]]; then
   case "$SERVICE" in
     open_webui) pkill -f '[o]pen-webui serve' || true;;
