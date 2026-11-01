@@ -12,7 +12,7 @@ A physical phone’s first chat-page load exposed macOS’s inherited 256-file l
 
 Known limits:
 
-- After a macOS restart cleared an obsolete Tailscale extension, private Serve routes for chat and the hub passed HTTPS health checks with certificate verification. A maintenance request through HTTPS without an admin key returned 401. A physical off-LAN phone test remains separate from these same-host checks.
+- After a macOS restart cleared an obsolete Tailscale extension, private Serve routes for chat and the hub passed HTTPS health checks with certificate verification. A maintenance request through HTTPS without an admin key returned 401. The user subsequently confirmed that the phone page loaded normally after installing Tailscale and applying the open-file limit fix. Phone response latency has not been measured.
 - A complete new Open WebUI / model installation was not exercised; existing chat and model services were retained.
 - Small Qwen and Gemma models were downloaded and exposed through tuned aliases. The Qwen profile was exercised through Open WebUI’s streaming endpoint; greeting timings are recorded in PERFORMANCE.md. The Gemma profile correctly identified a synthetic red PNG through the same endpoint (about 2.1 seconds to first visible text for that one image test).
 - After the reboot exposed an unreliable detached startup process, chat and Whisper were placed under macOS login-agent supervision. A controlled Open WebUI restart passed health checks and remained online after its controller exited. The existing n8n container resumed with its restart policy after Colima was enabled as a login service. No conversation or account data was removed.
