@@ -1,0 +1,30 @@
+# Live server data and credentials must never be published.
+.home-ai/
+.local-backups/
+.venv/
+.webui-venv/
+venvs/
+.env
+.env.*
+!.env.example
+.webui_secret_key
+open-webui-data/
+n8n-data/
+downloads/
+release/
+*.log
+*.db
+*.db-*
+*.sqlite*
+*.pem
+*.key
+__pycache__/
+*.pyc
+.DS_Store
+whisper/output/
+whisper/sample.*
+# Legacy machine-specific operational material
+CONSUMER_GUIDE.md
+launchd/
+scripts/setup_mac_server.sh
+workflows/
