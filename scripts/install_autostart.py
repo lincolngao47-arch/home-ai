@@ -21,6 +21,9 @@ def build_agent(label, command, environment):
         'RunAtLoad': True,
         'KeepAlive': True,
         'ThrottleInterval': 10,
+        # A first WebUI load can fetch hundreds of JS/CSS files concurrently.
+        'SoftResourceLimits': {'NumberOfFiles': 8192},
+        'HardResourceLimits': {'NumberOfFiles': 16384},
         'StandardOutPath': str(ROOT / '.home-ai' / (label + '.log')),
         'StandardErrorPath': str(ROOT / '.home-ai' / (label + '.log')),
     }

@@ -4,9 +4,11 @@ Checked on 2026-11-01 on macOS / Apple Silicon:
 
 - Installed dashboard dependencies into a new Python 3.11 virtual environment using `scripts/install.sh`.
 - Ten backend tests passed in both the existing environment and the new isolated environment: authentication, invalid actions, disabled controls, command failures, key persistence / permissions, removed account routes, static assets / headers, Tailscale route detection, and failed health checks.
-- JavaScript syntax and shell-script syntax checks passed.
+- JavaScript syntax and shell-script syntax checks passed. Three additional launcher tests verify raising a low inherited file limit, respecting a lower hard limit, and preserving an already-higher limit (13 tests total).
 - Live integration reported Open WebUI, Ollama, n8n, and Whisper online, and retrieved the installed model list from Ollama.
 - Browser checks covered English / Chinese, light / dark themes, invalid maintenance-key feedback, and responsive layouts. A narrow-screen metrics overflow was found and corrected.
+
+A physical phone’s first chat-page load exposed macOS’s inherited 256-file limit, causing JavaScript downloads to fail with `Too many open files`. The login agents now set an 8,192-file soft limit and a 16,384-file hard limit; the terminal chat launcher also raises its soft limit where permitted. A subsequent HTTPS test downloaded all 850 frontend JS/CSS assets with 128 concurrent requests, verified their contents, and recorded zero failures and zero new open-file errors.
 
 Known limits:
 

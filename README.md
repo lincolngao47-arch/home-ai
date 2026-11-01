@@ -57,7 +57,7 @@ Once the hub and chat have run successfully, install user login agents:
 .venv/bin/python scripts/install_autostart.py --chat
 ```
 
-The hub and native Open WebUI start after login and restart if they exit. For an existing Open WebUI installation, set `HOME_AI_WEBUI_BIN` to its executable. Add `--offline` only after its embedding model has been downloaded and cached. Repeating the installer preserves already-matching running jobs. Logs and previous agent configurations are saved under `.home-ai/`.
+The hub and native Open WebUI start after login and restart if they exit. Login agents use an 8,192-file soft limit so concurrent frontend downloads do not hit macOS’s default 256-file limit. For an existing Open WebUI installation, set `HOME_AI_WEBUI_BIN` to its executable. Add `--offline` only after its embedding model has been downloaded and cached. Repeating the installer preserves already-matching running jobs. Logs and previous agent configurations are saved under `.home-ai/`.
 
 For the optional legacy Whisper server, `--whisper` additionally requires `whisper/whisper_server.py` and `HOME_AI_WHISPER_PYTHON` pointing to its existing environment. It does not install Whisper. If n8n uses Colima, arrange for Colima to start after login; an existing n8n container with a restart policy resumes when Docker starts.
 
