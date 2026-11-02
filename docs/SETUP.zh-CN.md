@@ -59,3 +59,22 @@ Android：浏览器菜单 → 添加到主屏幕。
 默认仅监听本机，由 Tailscale 提供远程入口。不要将现有聊天数据、数据库、下载文件或日志上传 GitHub。使用 `python scripts/export_source.py` 生成明确允许的源码包。
 
 更多配置与限制见英文 README 和 SECURITY.md。
+
+
+## 不装手机 App：同一 Wi-Fi 访问
+
+在首页「连接设备」选择「同一 Wi-Fi」或「Tailscale」，主对话按钮和模型链接会随之切换，浏览器会记住选择。Mac 可接网线，只要手机和服务器在同一家庭局域网即可。
+
+macOS 登录后自动启动的部署，可执行：
+
+```bash
+.venv/bin/python scripts/install_autostart.py --chat --lan
+```
+
+已有 Open WebUI 环境请同时设置 `HOME_AI_WEBUI_BIN` 为对应可执行文件。手动启动时，分别用 `WEBUI_HOST=0.0.0.0 bash scripts/start_chat.sh` 和 `DASHBOARD_HOST=0.0.0.0 bash scripts/start_dashboard.sh`。首页会检查真实可达的局域网地址，再显示链接；VPN、Docker 网桥地址不会当作 Wi-Fi 地址。
+
+同一 Wi-Fi 无需安装 Tailscale，仍需 Open WebUI 登录。HTTP 不加密密码与对话，只在可信家庭网络使用；语音录制需要 HTTPS，可切换 Tailscale。访客 Wi-Fi 可能隔离设备。不要把这些端口转发到公网。
+
+原 Everyday 实际是 Qwen 3 4B Instruct，现使用清晰名称「Qwen 3 4B · Fast」；看图模型为「Gemma 3 4B · Images」。已下载的大 Qwen、DeepSeek 模型还需要在 Open WebUI 工作空间中创建/编辑模型配置并授予家庭用户读取权限，普通账号才能选择。无需提升账号角色。
+
+简单对话配置可关闭「内置工具 → 知识库」，避免写诗等任务自动搜索知识库。旧失败搜索的红叉改为中性文字提示，仍可展开查看错误详情。

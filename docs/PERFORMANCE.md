@@ -50,3 +50,10 @@ The first command may use already-loaded weights, then unloads the model. The se
 The current 16K budget leaves room for ordinary chat overhead; avoid attaching a lengthy installation guide as a default system prompt. After this fix, a warm production WebUI greeting began replying in about 0.10 seconds locally, a synthetic request longer than the old 4K budget completed successfully, and greetings completed through the full browser UI in an isolated preview with matching settings. For long documents, long conversations, or difficult reasoning, choose an appropriate larger model. Short outputs do not establish factual accuracy or task quality.
 
 Sources: [Qwen model](https://ollama.com/library/qwen3:4b-instruct), [Gemma model](https://ollama.com/library/gemma3:4b), [Open WebUI model URL parameters](https://docs.openwebui.com/features/chat-conversations/chat-features/url-params/).
+
+
+## Browser tools and concurrent model loads
+
+A later browser model-switch test showed that a successful bare API reply does not prove compatibility with the tools Open WebUI injects into normal chat. Query each installed model's capabilities and disable native built-in tools on profiles that do not support them. Gemma 3 image upload and chat regeneration were checked after this correction.
+
+For this 64GB development Mac, the existing four-generation parallel setting was reduced to one while retaining a two-model resident limit. Fast profiles keep their30-minute lifetime, and larger profiles use5minutes. This reduces simultaneous context-buffer pressure; it does not make a32B reasoning model as fast as a4B text model. Tune concurrency to measured memory and workload on other machines.

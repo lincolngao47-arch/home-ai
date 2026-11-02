@@ -61,7 +61,14 @@ if [[ "$ACTION" = start || "$ACTION" = restart ]]; then
     ollama)
       launchctl setenv OLLAMA_HOST '127.0.0.1:11434'
       launchctl setenv OLLAMA_ORIGINS 'http://localhost,http://127.0.0.1'
-      open -a Ollama
+      # LaunchServices may retain an older environment despite launchctl setenv.
+      # Pass the intended values to the launched app explicitly.
+      OLLAMA_OPTIONS=(--env 'OLLAMA_HOST=127.0.0.1:11434' --env 'OLLAMA_ORIGINS=http://localhost,http://127.0.0.1')
+      for key in OLLAMA_NUM_PARALLEL OLLAMA_MAX_LOADED_MODELS OLLAMA_KEEP_ALIVE; do
+        value="$(launchctl getenv "$key")"
+        if [[ -n "$value" ]]; then OLLAMA_OPTIONS+=(--env "$key=$value"); fi
+      done
+      open -g "${OLLAMA_OPTIONS[@]}" -a Ollama
       URL=http://127.0.0.1:11434/api/tags;;
     n8n)
       docker start n8n

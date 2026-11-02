@@ -1,6 +1,19 @@
 "use strict";
 const $ = (s) => document.querySelector(s);
 const zh = {
+  connectionChoice: "自由选择",
+  chooseConnection: "选择连接方式",
+  wifiChoice: "同一 Wi-Fi",
+  wifiDescription: "连接服务器所在的家庭网络，无需安装 App。使用 Open WebUI 账号登录。",
+  wifiUnavailable: "服务器尚未开启 Wi-Fi 访问。请查看安装指南，开启局域网访问。",
+  wifiPrivacy: "仅限家庭网络。此 HTTP 连接未加密，请使用可信 Wi-Fi；语音录制需要 HTTPS。",
+  wifiReady: "Wi-Fi 访问已就绪",
+  wifiNetworkReady: "同一家庭网络内无需安装 App。出门后可切换到 Tailscale。",
+  wifiOpen: "打开 Wi-Fi 对话 ↗",
+  wifiHub: "Wi-Fi 首页 ↗",
+  wifiPending: "Wi-Fi 访问未就绪",
+  secureMaintenance: "请在服务器本机或 Tailscale HTTPS 首页进行维护管理。",
+
   skip: "跳转到内容",
   privateSpace: "你的私密空间",
   overview: "概览",
@@ -21,14 +34,14 @@ const zh = {
   chatDescription: "通过 Open WebUI 提出问题、读懂文档，或一起推敲下一个灵感。",
   openChat: "打开 AI 对话",
   fastChat: "打开快速对话",
-  fastEveryday: "日常快聊",
-  fastVision: "轻量看图",
+  fastEveryday: "Qwen 3 4B · 快聊",
+  fastVision: "Gemma 3 4B · 看图",
   textModel: "快速文字对话 · 16K 上下文",
   visionModel: "快速图片理解 · 16K 上下文",
   chatNote: "使用你的 Open WebUI 账号登录。",
   checkingShort: "检查中",
   anywhere: "在家里。<br>也在远方。",
-  networkDescription: "通过 Tailscale 私密连接你的设备。",
+  networkDescription: "同一 Wi-Fi 直接访问，或通过 Tailscale 远程连接。",
   setupDevices: "设置你的设备 →",
   processor: "处理器",
   memory: "内存使用",
@@ -74,7 +87,7 @@ const zh = {
   offline: "离线",
   optional: "可选",
   open: "打开 ↗",
-  localOnly: "仅限本机 / 局域网",
+  localOnly: "仅限服务器本机",
   start: "启动",
   stop: "停止",
   restart: "重启",
@@ -111,11 +124,24 @@ const zh = {
   authError: "密钥无效，请检查服务器上的 admin-token 文件。",
 };
 const en = {
+  connectionChoice: "Your choice",
+  chooseConnection: "How do you want to connect?",
+  wifiChoice: "Same Wi-Fi",
+  wifiDescription: "Connect to the same home network as the server. No app to install; sign in with your Open WebUI account.",
+  wifiUnavailable: "Wi-Fi access is not enabled on the server yet. See the setup guide to enable LAN access.",
+  wifiPrivacy: "Home network only. This HTTP connection is unencrypted; use trusted Wi-Fi. Voice recording requires HTTPS.",
+  wifiReady: "Wi-Fi access ready",
+  wifiNetworkReady: "No app needed on your home network. Switch to Tailscale when you are away.",
+  wifiOpen: "Open Wi-Fi chat ↗",
+  wifiHub: "Wi-Fi home page ↗",
+  wifiPending: "Wi-Fi access unavailable",
+  secureMaintenance: "Open the hub on the server itself or through Tailscale HTTPS for maintenance.",
+
   remoteRequirement:
     "Install and connect Tailscale on every device that uses this address.",
   fastChat: "Open fast chat",
-  fastEveryday: "Fast · Everyday",
-  fastVision: "Fast · Images",
+  fastEveryday: "Qwen 3 4B · Fast",
+  fastVision: "Gemma 3 4B · Images",
   textModel: "Quick text chat · 16K context",
   visionModel: "Quick image understanding · 16K context",
   ready: "AI chat is ready",
@@ -128,7 +154,7 @@ const en = {
   offline: "Offline",
   optional: "Optional",
   open: "Open ↗",
-  localOnly: "Local / LAN only",
+  localOnly: "Server only",
   start: "Start",
   stop: "Stop",
   restart: "Restart",
@@ -174,6 +200,9 @@ let lang =
   localStorage.getItem("home-ai-language") ||
   (navigator.language.startsWith("zh") ? "zh" : "en");
 let theme = localStorage.getItem("home-ai-theme") || "auto";
+let connection = localStorage.getItem("home-ai-connection") ||
+  (location.hostname.endsWith(".ts.net") ? "tailscale" : "wifi");
+if (!["wifi", "tailscale"].includes(connection)) connection = "wifi";
 let adminKey = "",
   data = null,
   refreshing = false,
@@ -217,7 +246,27 @@ function translate() {
     lang === "zh" ? "Switch language to English" : "切换到中文",
   );
   applyTheme();
+  updateNavigation();
   if (data) render();
+}
+function updateNavigation() {
+  const view = ["overview", "services", "models", "connect"].includes(location.hash.slice(1))
+    ? location.hash.slice(1) : "overview";
+  document.querySelector(".breadcrumb strong").textContent = t(view);
+  document.querySelectorAll("nav a").forEach((link) => {
+    const active = link.getAttribute("href") === "#" + view;
+    link.classList.toggle("active", active);
+    if (active) link.setAttribute("aria-current", "location");
+    else link.removeAttribute("aria-current");
+  });
+}
+function updateMarkup(selector, markup) {
+  const element = $(selector);
+  // Polling should not destroy a keyboard user's focused link.
+  if (element.innerHTML === markup) return;
+  const focused = element.contains(document.activeElement) ? document.activeElement.closest("a")?.href : null;
+  element.innerHTML = markup;
+  if (focused) [...element.querySelectorAll("a")].find((link) => link.href === focused)?.focus({preventScroll: true});
 }
 $("#language").onclick = () => {
   lang = lang === "zh" ? "en" : "zh";
@@ -236,13 +285,21 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener(
   applyTheme,
 );
 function linkFor(service) {
-  const remote = location.hostname.endsWith(".ts.net");
-  const local =
-    ["localhost", "127.0.0.1", "[::1]"].includes(location.hostname) &&
-    location.protocol === "http:";
-  if (service === "open_webui" && data?.tailscale.chat_url && !local)
-    return data.tailscale.chat_url;
-  if (remote || location.protocol === "https:") return null;
+  if (service === "open_webui") {
+    if (connection === "tailscale") return data?.tailscale.chat_url || null;
+    // Keep local browsing local, but use a verified LAN endpoint on other devices.
+    if (["localhost", "127.0.0.1", "[::1]"].includes(location.hostname)) {
+      const url = new URL(location.origin);
+      url.protocol = "http:";
+      url.port = data?.services.open_webui.port || "3000";
+      url.pathname = "/";
+      return url.href;
+    }
+    const addresses = data?.lan?.addresses || [];
+    return addresses.find((item) => item.address === location.hostname)?.chat_url || data?.lan?.chat_url || null;
+  }
+  // Other backends are intentionally not exposed with Wi-Fi chat.
+  if (!["localhost", "127.0.0.1", "[::1]"].includes(location.hostname) || location.protocol === "https:") return null;
   const port = data?.services[service]?.port;
   if (!port) return null;
   const url = new URL(location.origin);
@@ -274,8 +331,20 @@ function render() {
   $("#overall").textContent = t(coreReady ? "ready" : "attention");
   $("#overall").classList.toggle("warn", !coreReady);
   const net = data.tailscale;
+  const wifi = connection === "wifi";
+  document.querySelectorAll('input[name="connection"]').forEach((input) => {
+    input.checked = input.value === connection;
+  });
+  $("#wifi-instructions").hidden = !wifi;
+  $("#tailscale-instructions").hidden = wifi;
+  const lanAddresses = data.lan?.addresses || [];
+  $("#wifi-unavailable").hidden = Boolean(data.lan?.chat_url);
+  updateMarkup("#wifi-addresses", lanAddresses.map((item) => {
+    if (!item.chat_url) return "";
+    return `<div><a href="${escapeHTML(item.chat_url)}">${t("wifiOpen")}</a><code>${escapeHTML(item.chat_url)}</code>${item.dashboard_url ? `<a href="${escapeHTML(item.dashboard_url)}">${t("wifiHub")}</a>` : ""}</div>`;
+  }).join(""));
   $("#network-badge").textContent = t(
-    net.chat_url
+    wifi ? (data.lan?.chat_url ? "wifiReady" : "wifiPending") : net.chat_url
       ? "connected"
       : net.state === "NeedsLogin"
         ? "loginNeeded"
@@ -284,7 +353,7 @@ function render() {
           : "unavailable",
   );
   $("#network-description").textContent = t(
-    net.chat_url
+    wifi ? (data.lan?.chat_url ? "wifiNetworkReady" : "wifiUnavailable") : net.chat_url
       ? "networkReady"
       : net.state === "Running"
         ? "networkSetup"
@@ -363,7 +432,7 @@ function render() {
       return rank(a.name) - rank(b.name);
     });
   $("#model-count").textContent = models.length;
-  $("#model-list").innerHTML = models.length
+  const modelMarkup = models.length
     ? models
         .map((model) => {
           const label =
@@ -386,6 +455,7 @@ function render() {
         })
         .join("")
     : `<p>${t("noModels")}</p>`;
+  updateMarkup("#model-list", modelMarkup);
   $("#admin").textContent = t(adminKey ? "lock" : "maintenance");
 }
 async function refresh() {
@@ -411,6 +481,13 @@ async function refresh() {
     $("#refresh").disabled = false;
   }
 }
+document.querySelectorAll('input[name="connection"]').forEach((input) => {
+  input.onchange = () => {
+    connection = input.value;
+    localStorage.setItem("home-ai-connection", connection);
+    if (data) render();
+  };
+});
 $("#refresh").onclick = refresh;
 $("#copy-url").onclick = async () => {
   try {
@@ -421,6 +498,10 @@ $("#copy-url").onclick = async () => {
   }
 };
 $("#admin").onclick = () => {
+  if (!window.isSecureContext) {
+    toast(t("secureMaintenance"));
+    return;
+  }
   if (adminKey) {
     adminKey = "";
     render();
@@ -497,14 +578,7 @@ $("#confirm-action").onclick = async () => {
     if (data) render();
   }
 };
-document.querySelectorAll("nav a").forEach(
-  (a) =>
-    (a.onclick = () => {
-      document
-        .querySelectorAll("nav a")
-        .forEach((x) => x.classList.toggle("active", x === a));
-    }),
-);
+window.addEventListener("hashchange", updateNavigation);
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden) refresh();
 });

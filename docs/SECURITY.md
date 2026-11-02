@@ -1,6 +1,7 @@
 # Security boundaries
 
 - Default hub binding is loopback. Use private Tailscale Serve for remote access; do not enable Funnel or router port forwarding for this stack.
+- Same-Wi-Fi mode is an explicit opt-in (`--lan`): chat and hub listen on network interfaces. Keep sign-in enabled, use a trusted home network, and do not forward ports. HTTP LAN access is unencrypted and browser microphone recording needs HTTPS. Guest-network isolation may prevent access. Omitting `--lan` later preserves the prior setting; explicitly set both listen hosts to `127.0.0.1` to restore local-only access.
 - Read-only status is visible to anyone who can reach the hub. It includes host / model metadata. Limit tailnet grants when adding other people.
 - Every mutating endpoint requires the admin key, including loopback and proxied requests. No wildcard CORS policy is enabled. Responses restrict scripts and framing.
 - Admin keys are generated randomly and stored with mode 0600 under `.home-ai/`. The browser keeps the key only in tab memory. Rotate it by stopping the hub, replacing the file with a new cryptographically random value of at least 32 characters, and restarting. No keys appear in URLs.

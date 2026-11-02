@@ -88,3 +88,16 @@ html.dark #message-input-container {
     min-height: 44px;
   }
 }
+/* A clear, neutral label replaces the cryptic red X on old knowledge searches.
+   The native expandable details still explain the actual failure. */
+.homeai-search-unavailable .text-red-500,
+.homeai-search-unavailable .text-red-400,
+.homeai-search-unavailable .line-clamp-1 > * {
+  display: none;
+}
+.homeai-search-unavailable .line-clamp-1::before {
+  content: attr(data-homeai-status);
+  font-size: 13px;
+  color: #63716b;
+}
+html.dark .homeai-search-unavailable .line-clamp-1::before { color: #acbcb3; }

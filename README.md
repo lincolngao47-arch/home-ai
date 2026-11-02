@@ -1,6 +1,6 @@
 # Home AI
 
-A small, bilingual home page for your private AI server. Open chat, see which services are running, check your models, and connect your devices through Tailscale.
+A small, bilingual home page for your private AI server. Open chat, see which services are running, check your models, and connect over the same home Wi-Fi or through Tailscale.
 
 **Status: early preview.** Built and exercised on an Apple Silicon Mac with an existing Ollama + Open WebUI installation. The dashboard also runs on Linux; native service controls are macOS-only. Phones, tablets, Windows PCs, and Macs use the same responsive web interface.
 
@@ -11,7 +11,7 @@ A small, bilingual home page for your private AI server. Open chat, see which se
 - A responsive home page with English / 中文, light / dark / system themes, keyboard navigation, and mobile zoom.
 - Actual service health and installed / loaded Ollama models; optional services can be offline without marking chat as broken.
 - CPU, memory, disk space, and uptime from the host.
-- Private HTTPS setup using Tailscale Serve, with no router port forwarding.
+- A choice of same-Wi-Fi access without a phone app, or private HTTPS using Tailscale Serve.
 - Admin-key-protected macOS service controls with confirmation, validated inputs, and explicit failures.
 - An explicit source-export allowlist that excludes conversations, account databases, keys, media, and logs.
 
@@ -71,7 +71,7 @@ With Ollama running, download two small models (about 6 GB):
 .venv/bin/python scripts/install_fast_models.py
 ```
 
-The hub’s main button then opens `home-fast`, a Qwen 4B instruct model for quick text chat. Choose `home-vision` for images. Both use a 16K context with up to 2K reply tokens, and the larger models stay available. The hub’s model links override a browser’s old model selection.
+The hub’s main button then opens `home-fast`, a Qwen 4B instruct model for quick text chat. Choose `home-vision` (Gemma 3 4B) for images. Both use a 16K context with up to 2K reply tokens, and the larger models stay available. The hub’s model links override a browser’s old model selection.
 
 On the development Mac, a greeting began showing text in about 2.1 seconds cold and 0.12 seconds warm through Open WebUI, versus about 14 seconds cold for the previous 27B default. These are individual local measurements; phone/network latency and task complexity vary. See [settings, tradeoffs, and reproduction](docs/PERFORMANCE.md).
 
@@ -85,9 +85,38 @@ To apply the restrained chat stylesheet and remove the legacy floating guide con
 
 The helper backs up the affected assets, updates both the served and startup-copy source files, and versions their URLs so a reloaded phone page receives the changes. It preserves Open WebUI’s layout and branding. Reapply it after an Open WebUI package upgrade. Existing installations should use their own Open WebUI Python interpreter.
 
+Give profiles clear names such as **Qwen 3 4B · Fast** (the previous Everyday label) and **Gemma 3 4B · Images**. Existing larger Qwen and DeepSeek weights do not automatically grant regular users access: in Open WebUI's Workspace → Models, create or edit a profile for each model and share read access with the intended household users. Pin/order those profiles in admin model settings if desired; do not change account roles to solve model visibility.
+
+For simple chat profiles, turn off **Built-in Tools → Knowledge** when you do not want automatic knowledge-base searches. Native file context remains separate. For models whose Ollama capabilities do not include tools (such as Gemma 3 and DeepSeek R1 here), also turn off the model’s **Built-in Tools** capability; otherwise a browser chat can fail even when a bare API greeting works. The optional polish replaces the cryptic red cross on historical failed knowledge searches with “Knowledge search unavailable · Details”; the actual failure details remain expandable.
+
 Keep instance system instructions concise; a full installation guide should not be sent with every greeting. If an older model profile explicitly specifies a 4K context, update it to 16,384 and set its reply budget to 2,048 in Open WebUI, or remove that override so the alias defaults apply.
 
 ## Access from another device
+
+In the hub, open **Connect a device** and choose **Same Wi-Fi** or **Tailscale**. The choice also controls the main chat button and model links, and is remembered by that browser.
+
+### Same Wi-Fi: no client app
+
+Enable access on your trusted home network. On macOS, for supervised services:
+
+```bash
+.venv/bin/python scripts/install_autostart.py --chat --lan
+```
+
+For terminal-managed services on macOS or Linux, run these in separate terminals:
+
+```bash
+WEBUI_HOST=0.0.0.0 bash scripts/start_chat.sh
+DASHBOARD_HOST=0.0.0.0 bash scripts/start_dashboard.sh
+```
+
+Use the Wi-Fi address displayed in the hub on your phone. The server can use Ethernet or Wi-Fi, provided both devices are on the same home network. A guest network may block device-to-device access. Addresses can change after a router restart; reserve the server's address in your router if needed.
+
+This explicitly opens chat and the hub on the server's network interfaces. Keep Open WebUI sign-in enabled. Use trusted home Wi-Fi: plain HTTP does not encrypt passwords or conversations. Browser microphone recording requires HTTPS; use the Tailscale address for voice. Do not forward these ports from the internet. Ollama stays on loopback.
+
+To return supervised services to local-only listening, rerun the installer with `WEBUI_HOST=127.0.0.1 DASHBOARD_HOST=127.0.0.1` and the same options. Omitting `--lan` alone preserves your previous listen settings.
+
+### Tailscale: private HTTPS at home or away
 
 Install [Tailscale](https://tailscale.com/download) on the server and each client device. Sign in to your private network, then run:
 
@@ -114,6 +143,7 @@ Service controls are designed for a dedicated Mac with the native Ollama app, na
 | --- | --- |
 | `HOME_AI_PYTHON` | Python executable used by setup / launch scripts |
 | `DASHBOARD_HOST` | Listen address; default `127.0.0.1` |
+| `WEBUI_HOST` | Chat listen address; default `127.0.0.1`; `0.0.0.0` enables LAN listening |
 | `DASHBOARD_PORT` | Hub port; default `8088` |
 | `WEBUI_URL`, `OLLAMA_URL`, `N8N_URL`, `WHISPER_URL` | Backend health / model endpoints |
 | `HOME_AI_STATE_DIR` | Location of the generated admin key |

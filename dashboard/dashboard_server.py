@@ -2,6 +2,7 @@
 """Home AI: a small, private service hub. No access to chat/account databases."""
 import asyncio
 import hmac
+import ipaddress
 import json
 import os
 import platform
@@ -158,17 +159,53 @@ async def models(client):
     return result
 
 
+def lan_addresses():
+    """Only physical, active adapters on RFC1918 networks; omit VPNs and bridges."""
+    private = [ipaddress.ip_network(net) for net in ('10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16')]
+    interfaces = psutil.net_if_stats()
+    found = []
+    for name, addresses in psutil.net_if_addrs().items():
+        if not name.lower().startswith(('en', 'eth', 'wlan', 'wi-fi', 'wi fi')):
+            continue
+        if name not in interfaces or not interfaces[name].isup:
+            continue
+        for address in addresses:
+            if address.family == socket.AF_INET and any(ipaddress.ip_address(address.address) in net for net in private):
+                found.append(address.address)
+    return sorted(set(found))
+
+
+async def lan_status(client):
+    async def check(address):
+        result = {'address': address, 'chat_url': None, 'dashboard_url': None}
+        for key, port in (('chat_url', urlparse(SERVICES['open_webui'][1]).port), ('dashboard_url', PORT)):
+            if not port:
+                continue
+            base = f'http://{address}:{port}'
+            try:
+                response = await client.get(base + '/health')
+                if response.status_code == 200:
+                    result[key] = base + '/'
+            except httpx.HTTPError:
+                pass
+        return result
+    addresses = await asyncio.gather(*(check(address) for address in lan_addresses()))
+    return {'addresses': addresses,
+            'chat_url': next((item['chat_url'] for item in addresses if item['chat_url']), None),
+            'dashboard_url': next((item['dashboard_url'] for item in addresses if item['dashboard_url']), None)}
+
+
 @app.get('/api/stats')
 async def stats():
     async with lock:
         if cache['value'] is not None and time.monotonic() - cache['at'] < 5:
             return cache['value']
         async with httpx.AsyncClient(timeout=2, trust_env=False) as client:
-            results, model_info, hw, network = await asyncio.gather(
+            results, model_info, hw, network, lan = await asyncio.gather(
                 asyncio.gather(*(probe(client, key, spec) for key, spec in SERVICES.items())),
-                models(client), asyncio.to_thread(hardware), asyncio.to_thread(tailscale_status))
+                models(client), asyncio.to_thread(hardware), asyncio.to_thread(tailscale_status), lan_status(client))
         data = {'timestamp': int(time.time()), 'services': dict(results), 'ollama': model_info,
-                'hardware': hw, 'tailscale': network, 'controls_enabled': CONTROL_ENABLED}
+                'hardware': hw, 'tailscale': network, 'lan': lan, 'controls_enabled': CONTROL_ENABLED}
         cache.update(at=time.monotonic(), value=data)
         return data
 

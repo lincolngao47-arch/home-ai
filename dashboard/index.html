@@ -136,7 +136,7 @@
               </div>
               <h2 data-i18n="anywhere">At home.<br />And everywhere.</h2>
               <p id="network-description" data-i18n="networkDescription">
-                Connect your devices privately with Tailscale.
+                Connect over home Wi-Fi or privately with Tailscale.
               </p>
               <a class="text-link" href="#connect" data-i18n="setupDevices"
                 >Set up your devices →</a
@@ -206,8 +206,20 @@
             <section id="connect" class="panel">
               <div class="section-heading">
                 <h2 data-i18n="connect">Connect a device</h2>
-                <span class="badge">Tailscale</span>
+                <span class="badge" data-i18n="connectionChoice">Your choice</span>
               </div>
+              <fieldset class="connection-options">
+                <legend data-i18n="chooseConnection">How do you want to connect?</legend>
+                <label><input type="radio" name="connection" value="wifi" /><span data-i18n="wifiChoice">Same Wi-Fi</span></label>
+                <label><input type="radio" name="connection" value="tailscale" /><span>Tailscale</span></label>
+              </fieldset>
+              <div id="wifi-instructions" hidden>
+                <p data-i18n="wifiDescription">Connect to the same home network as the server. No app to install; sign in with your Open WebUI account.</p>
+                <div id="wifi-addresses" class="connection-addresses"></div>
+                <p id="wifi-unavailable" class="subtle" data-i18n="wifiUnavailable">Wi-Fi access is not enabled on the server yet. See the setup guide to enable LAN access.</p>
+                <p class="caption" data-i18n="wifiPrivacy">Home network only. This HTTP connection is unencrypted; use trusted Wi-Fi. Voice recording requires HTTPS.</p>
+              </div>
+              <div id="tailscale-instructions">
               <ol class="steps">
                 <li>
                   <div>
@@ -251,6 +263,7 @@
                   </div>
                 </li>
               </ol>
+              </div>
             </section>
           </div>
           <section class="footer-note">

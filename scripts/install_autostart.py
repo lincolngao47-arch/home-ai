@@ -67,6 +67,7 @@ def install(label, command, environment):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--chat', action='store_true', help='Also supervise an installed native Open WebUI')
+    parser.add_argument('--lan', action='store_true', help='Allow chat and hub from the same trusted Wi-Fi/LAN, without a client app')
     parser.add_argument('--offline', action='store_true', help='Use already-cached WebUI embedding models; run chat once before selecting this')
     parser.add_argument('--whisper', action='store_true', help='Supervise an existing whisper/whisper_server.py using HOME_AI_WHISPER_PYTHON')
     args = parser.parse_args()
@@ -86,9 +87,12 @@ def main():
     previous = Path.home() / 'Library/LaunchAgents/com.homeai.dashboard.plist'
     old_host = plistlib.loads(previous.read_bytes()).get('EnvironmentVariables', {}).get('DASHBOARD_HOST', '127.0.0.1') if previous.exists() else '127.0.0.1'
     install('com.homeai.dashboard', [str(python), str(ROOT / 'dashboard/dashboard_server.py')],
-            {**environment, 'DASHBOARD_HOST': os.environ.get('DASHBOARD_HOST', old_host)})
+            {**environment, 'DASHBOARD_HOST': os.environ.get('DASHBOARD_HOST', '0.0.0.0' if args.lan else old_host)})
     if args.chat:
-        chat_environment = {**environment, 'HOME_AI_WEBUI_BIN': str(webui), 'ENABLE_SIGNUP': 'false'}
+        previous_chat = Path.home() / 'Library/LaunchAgents/com.homeai.open-webui.plist'
+        old_chat_host = plistlib.loads(previous_chat.read_bytes()).get('EnvironmentVariables', {}).get('WEBUI_HOST', '127.0.0.1') if previous_chat.exists() else '127.0.0.1'
+        chat_environment = {**environment, 'HOME_AI_WEBUI_BIN': str(webui), 'ENABLE_SIGNUP': 'false',
+                            'WEBUI_HOST': os.environ.get('WEBUI_HOST', '0.0.0.0' if args.lan else old_chat_host)}
         if args.offline:
             chat_environment.update(OFFLINE_MODE='true', HF_HUB_OFFLINE='1')
         install('com.homeai.open-webui', ['/bin/bash', str(ROOT / 'scripts/start_chat.sh')], chat_environment)

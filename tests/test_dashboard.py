@@ -77,5 +77,30 @@ class DashboardTests(unittest.TestCase):
                 self.assertFalse(result['online'])
                 self.assertIsNone(result['latency_ms'])
         asyncio.run(run())
+    def test_lan_discovery_excludes_vpn_bridges_and_public_addresses(self):
+        import socket
+        from types import SimpleNamespace as Item
+        addresses = {
+            'en1': [Item(family=socket.AF_INET, address='192.168.1.20')],
+            'utun0': [Item(family=socket.AF_INET, address='10.8.0.2')],
+            'bridge100': [Item(family=socket.AF_INET, address='192.168.64.1')],
+            'eth0': [Item(family=socket.AF_INET, address='203.0.113.2')],
+            'wlan0': [Item(family=socket.AF_INET, address='10.0.0.20')],
+        }
+        stats = {name: Item(isup=name != 'wlan0') for name in addresses}
+        with patch.object(m.psutil, 'net_if_addrs', return_value=addresses), patch.object(m.psutil, 'net_if_stats', return_value=stats):
+            self.assertEqual(m.lan_addresses(), ['192.168.1.20'])
+
+    def test_lan_links_require_a_reachable_service_on_that_address(self):
+        import asyncio, httpx
+        async def run():
+            def respond(request):
+                return httpx.Response(200 if request.url.port == m.PORT else 503)
+            with patch.object(m, 'lan_addresses', return_value=['192.168.1.20']):
+                async with httpx.AsyncClient(transport=httpx.MockTransport(respond)) as client:
+                    result = await m.lan_status(client)
+            self.assertIsNone(result['chat_url'])
+            self.assertEqual(result['dashboard_url'], f'http://192.168.1.20:{m.PORT}/')
+        asyncio.run(run())
 
 if __name__ == '__main__': unittest.main()
